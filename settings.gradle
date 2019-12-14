@@ -1,0 +1,2 @@
+include ':app', ':mvvm'
+rootProject.name='jade-mvvm'

@@ -1,0 +1,40 @@
+package com.jade.mvvm.fragment.refresh
+
+import androidx.lifecycle.Observer
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.blade.annotation.Inject
+import com.jade.mvvm.R
+import com.jade.mvvm.fragment.list.source.LoadStatus
+import com.jade.mvvm.fragment.list.viewModel.BaseRecyclerViewModel
+import com.jade.mvvm.helper.Constant
+import com.jade.mvvm.helper.presenter.Presenter
+
+class RefreshPresenter : Presenter() {
+    @Inject(Constant.VIEW_MODEL)
+    lateinit var mViewModel: BaseRecyclerViewModel<*, *>
+    private lateinit var mRefreshLayout: SwipeRefreshLayout
+    private val mLoadStatusObserver = Observer<LoadStatus> {
+        if (it != LoadStatus.LOADING) {
+            mRefreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun onCreate() {
+        mRefreshLayout = getRootView().findViewById(R.id.refresh_layout)
+    }
+
+    override fun onBind() {
+        mViewModel.mLoadStatusLiveData?.observe(getCurrentFragment()!!, mLoadStatusObserver)
+        mRefreshLayout.setOnRefreshListener {
+            mViewModel.refresh()
+            mRefreshLayout.isRefreshing = true
+        }
+    }
+
+    override fun onUnBind() {
+        mViewModel.mLoadStatusLiveData?.removeObserver(mLoadStatusObserver)
+    }
+
+    override fun onDestroy() {
+    }
+}
