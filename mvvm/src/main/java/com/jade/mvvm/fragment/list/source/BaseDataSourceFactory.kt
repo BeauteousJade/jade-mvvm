@@ -2,7 +2,6 @@ package com.jade.mvvm.fragment.list.source
 
 import androidx.paging.DataSource
 
-
 abstract class BaseDataSourceFactory<KEY, MODEL> : DataSource.Factory<KEY, MODEL>() {
 
     private val mDataSource by lazy { createDataSource() }

@@ -7,7 +7,7 @@ class DataSourceSnapshot<MODEL> {
     @OperateState
     var mOperateState = DEFAULT
 
-    fun isOperate() = mOperateState == DEFAULT
+    fun isOperate() = mOperateState != DEFAULT
 
     companion object {
         @IntDef(DEFAULT, UPDATE, REMOVE, ADD)

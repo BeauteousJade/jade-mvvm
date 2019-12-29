@@ -3,41 +3,41 @@ package com.jade.mvvm.fragment.list.source
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
 import com.jade.mvvm.fragment.list.helper.DataSourceSnapshot
-import com.jade.mvvm.network.Request
 import com.jade.mvvm.network.RequestCallback
+import com.jade.mvvm.repository.list.ListPositionRepository
 
-abstract class BasePostitionDataSource<MODEL> : PositionalDataSource<MODEL>(), DataSourceAdapter<MODEL> {
+abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository: ListPositionRepository<List<MODEL>>) :
+    PositionalDataSource<MODEL>(),
+    DataSourceAdapter<MODEL> {
 
     private val mDataSourceSnapshot = DataSourceSnapshot<MODEL>()
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()
 
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<MODEL>) {
-        if (mDataSourceSnapshot.isOperate()) {
+        val callBackInvoker: (list: List<MODEL>) -> Unit = {
             if (params.placeholdersEnabled) {
-                callback.onResult(mDataSourceSnapshot.mModelList, 0, getTotalCount())
+                callback.onResult(it, 0, getTotalCount())
             } else {
-                callback.onResult(mDataSourceSnapshot.mModelList, 0)
+                callback.onResult(it, 0)
             }
+        }
+        if (mDataSourceSnapshot.isOperate()) {
+            callBackInvoker.invoke(mDataSourceSnapshot.mModelList)
             return
         }
         mLoadStatusLiveData.postValue(LoadStatus.LOADING)
-        val requestCallback = object : RequestCallback<List<MODEL>> {
+        listPositionRepository.loadInit(params.pageSize, object : RequestCallback<List<MODEL>> {
             override fun onResult(t: List<MODEL>) {
                 mDataSourceSnapshot.mModelList.clear()
                 mDataSourceSnapshot.mModelList.addAll(t)
-                if (params.placeholdersEnabled) {
-                    callback.onResult(t, 0, getTotalCount())
-                } else {
-                    callback.onResult(t, 0)
-                }
+                callBackInvoker.invoke(t)
                 mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
             }
 
             override fun onError(throwable: Throwable) {
                 mLoadStatusLiveData.postValue(LoadStatus.ERROR)
             }
-        }
-        onCreateInitialRequest(params.pageSize).enqueue(requestCallback)
+        })
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MODEL>) {
@@ -46,17 +46,20 @@ abstract class BasePostitionDataSource<MODEL> : PositionalDataSource<MODEL>(), D
             return
         }
         mLoadStatusLiveData.postValue(LoadStatus.LOADING)
-        onCreateRangeRequest(params.startPosition, params.loadSize).enqueue(object : RequestCallback<List<MODEL>> {
-            override fun onResult(t: List<MODEL>) {
-                mDataSourceSnapshot.mModelList.addAll(t)
-                callback.onResult(t)
-                mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
-            }
+        listPositionRepository.loadMore(
+            params.startPosition,
+            params.loadSize,
+            object : RequestCallback<List<MODEL>> {
+                override fun onResult(t: List<MODEL>) {
+                    mDataSourceSnapshot.mModelList.addAll(t)
+                    callback.onResult(t)
+                    mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
+                }
 
-            override fun onError(throwable: Throwable) {
-                mLoadStatusLiveData.postValue(LoadStatus.ERROR)
-            }
-        })
+                override fun onError(throwable: Throwable) {
+                    mLoadStatusLiveData.postValue(LoadStatus.ERROR)
+                }
+            })
     }
 
     final override fun refresh() {
@@ -95,10 +98,6 @@ abstract class BasePostitionDataSource<MODEL> : PositionalDataSource<MODEL>(), D
     }
 
     final override fun getLoadStatusLiveData(): MutableLiveData<LoadStatus> = mLoadStatusLiveData
-
-    abstract fun onCreateInitialRequest(pageSize: Int): Request<List<MODEL>>
-
-    abstract fun onCreateRangeRequest(startPosition: Int, pageSize: Int): Request<List<MODEL>>
 
     open fun getTotalCount() = Int.MAX_VALUE
 }

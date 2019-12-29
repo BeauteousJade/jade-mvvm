@@ -6,8 +6,10 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.jade.mvvm.fragment.list.helper.ListOperation
 import com.jade.mvvm.fragment.list.source.BaseDataSourceFactory
+import com.jade.mvvm.viewModel.BaseViewModel
 
-abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSourceFactory<KEY, MODEL>) : ViewModel(),
+abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSourceFactory<KEY, MODEL>) :
+    ViewModel(),
     ListOperation<MODEL> {
 
     private val mDataSource: DataSource<KEY, MODEL> = dataSourceFactory.create()
@@ -64,6 +66,7 @@ abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSour
     protected fun enablePlaceholders() = true
 
     protected fun getInitialLoadSizeHint() = -1
+
     protected fun getPrefetchDistance() = -1
 
     @Suppress("UNCHECKED_CAST")

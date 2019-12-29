@@ -14,9 +14,7 @@ class RefreshPresenter : Presenter() {
     lateinit var mViewModel: BaseRecyclerViewModel<*, *>
     private lateinit var mRefreshLayout: SwipeRefreshLayout
     private val mLoadStatusObserver = Observer<LoadStatus> {
-        if (it != LoadStatus.LOADING) {
-            mRefreshLayout.isRefreshing = false
-        }
+        mRefreshLayout.isRefreshing = it == LoadStatus.LOADING
     }
 
     override fun onCreate() {
@@ -27,14 +25,10 @@ class RefreshPresenter : Presenter() {
         mViewModel.mLoadStatusLiveData?.observe(getCurrentFragment()!!, mLoadStatusObserver)
         mRefreshLayout.setOnRefreshListener {
             mViewModel.refresh()
-            mRefreshLayout.isRefreshing = true
         }
     }
 
     override fun onUnBind() {
         mViewModel.mLoadStatusLiveData?.removeObserver(mLoadStatusObserver)
-    }
-
-    override fun onDestroy() {
     }
 }
