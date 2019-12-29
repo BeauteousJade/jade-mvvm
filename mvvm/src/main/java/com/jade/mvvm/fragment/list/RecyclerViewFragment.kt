@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jade.mvvm.R
 import com.jade.mvvm.fragment.BaseFragment
 import com.jade.mvvm.fragment.list.adapter.BasePageListAdapter
-import com.jade.mvvm.fragment.list.viewModel.BaseRecyclerViewModel
+import com.jade.mvvm.fragment.viewModel.BaseRecyclerViewModel
 
 abstract class RecyclerViewFragment<MODEL, T : BaseRecyclerViewModel<*, MODEL>> : BaseFragment<T>() {
 

@@ -1,4 +1,4 @@
-package com.jade.mvvm.viewModel
+package com.jade.mvvm.fragment.viewModel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.switchMap

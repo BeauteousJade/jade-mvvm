@@ -1,4 +1,4 @@
-package com.jade.mvvm.fragment.list.source
+package com.jade.mvvm.helper.source.helper
 
 import androidx.lifecycle.MutableLiveData
 import com.jade.mvvm.fragment.list.helper.ListOperation

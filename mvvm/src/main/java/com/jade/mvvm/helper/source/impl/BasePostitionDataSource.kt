@@ -1,8 +1,10 @@
-package com.jade.mvvm.fragment.list.source
+package com.jade.mvvm.helper.source.impl
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
-import com.jade.mvvm.fragment.list.helper.DataSourceSnapshot
+import com.jade.mvvm.helper.source.DataSourceSnapshot
+import com.jade.mvvm.helper.source.helper.DataSourceAdapter
+import com.jade.mvvm.helper.source.helper.LoadStatus
 import com.jade.mvvm.network.RequestCallback
 import com.jade.mvvm.repository.list.ListPositionRepository
 
@@ -63,36 +65,42 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
     }
 
     final override fun refresh() {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.DEFAULT
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.DEFAULT
         invalidate()
     }
 
     final override fun update(position: Int, model: MODEL) {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.UPDATE
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.UPDATE
         mDataSourceSnapshot.mModelList[position] = model
         invalidate()
     }
 
     final override fun remove(list: List<MODEL>) {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.REMOVE
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.REMOVE
         mDataSourceSnapshot.mModelList.removeAll(list)
         invalidate()
     }
 
     final override fun remove(position: Int) {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.REMOVE
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.REMOVE
         mDataSourceSnapshot.mModelList.removeAt(position)
         invalidate()
     }
 
     final override fun add(list: List<MODEL>) {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.ADD
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.ADD
         mDataSourceSnapshot.mModelList.addAll(list)
         invalidate()
     }
 
     final override fun add(position: Int, model: MODEL) {
-        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.ADD
+        mDataSourceSnapshot.mOperateState =
+            DataSourceSnapshot.ADD
         mDataSourceSnapshot.mModelList.add(position, model)
         invalidate()
     }

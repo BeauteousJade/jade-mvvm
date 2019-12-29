@@ -1,12 +1,11 @@
-package com.jade.mvvm.fragment.list.viewModel
+package com.jade.mvvm.fragment.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.jade.mvvm.fragment.list.helper.ListOperation
-import com.jade.mvvm.fragment.list.source.BaseDataSourceFactory
-import com.jade.mvvm.viewModel.BaseViewModel
+import com.jade.mvvm.helper.source.BaseDataSourceFactory
 
 abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSourceFactory<KEY, MODEL>) :
     ViewModel(),
