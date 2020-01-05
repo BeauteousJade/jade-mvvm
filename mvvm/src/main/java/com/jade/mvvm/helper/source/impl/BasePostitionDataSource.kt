@@ -107,5 +107,5 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
 
     final override fun getLoadStatusLiveData(): MutableLiveData<LoadStatus> = mLoadStatusLiveData
 
-    open fun getTotalCount() = Int.MAX_VALUE
+    open fun getTotalCount() = 0
 }
