@@ -12,7 +12,7 @@ abstract class BaseRepository<MODEL> : Repository<MODEL> {
     private val mLoadDataLiveData = MutableLiveData<Response<MODEL>>()
 
     final override fun load() {
-        mLoadStatusLiveData.postValue(LoadStatus.LOADING)
+        mLoadStatusLiveData.postValue(LoadStatus.LOADING_REFRESH)
         getRequest().enqueue(object : RequestCallback<MODEL> {
             override fun onResult(t: MODEL) {
                 mLoadDataLiveData.postValue(Response(t, null))

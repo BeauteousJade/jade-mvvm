@@ -1,5 +1,7 @@
 package com.jade.mvvm.fragment.viewModel
 
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.switchMap
 import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -13,7 +15,9 @@ abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSour
 
     private val mDataSource: DataSource<KEY, MODEL> = dataSourceFactory.create()
     val mPageListLiveData = LivePagedListBuilder(dataSourceFactory, initConfig()).build()
-    val mLoadStatusLiveData = dataSourceFactory.asDataSourceAdapter()?.getLoadStatusLiveData()
+    val mLoadStatusLiveData = switchMap(dataSourceFactory.asDataSourceAdapter()?.getLoadStatusLiveData()!!) {
+        MutableLiveData(it)
+    }
 
     private fun initConfig(): PagedList.Config {
         return PagedList.Config.Builder()
@@ -60,13 +64,13 @@ abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSour
         asListOperation(mDataSource)?.add(list)
     }
 
-    protected fun getPageSize() = 20
+    protected open fun getPageSize() = 20
 
-    protected fun enablePlaceholders() = true
+    protected open fun enablePlaceholders() = true
 
-    protected fun getInitialLoadSizeHint() = -1
+    protected open fun getInitialLoadSizeHint() = -1
 
-    protected fun getPrefetchDistance() = -1
+    protected open fun getPrefetchDistance() = -1
 
     @Suppress("UNCHECKED_CAST")
     private fun asListOperation(dataSource: DataSource<KEY, MODEL>): ListOperation<MODEL>? =

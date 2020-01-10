@@ -2,8 +2,8 @@ package com.jade.mvvm.helper.source.impl
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
-import com.jade.mvvm.helper.source.DataSourceSnapshot
 import com.jade.mvvm.helper.source.helper.DataSourceAdapter
+import com.jade.mvvm.helper.source.helper.DataSourceSnapshotHelper
 import com.jade.mvvm.helper.source.helper.LoadStatus
 import com.jade.mvvm.network.RequestCallback
 import com.jade.mvvm.repository.list.ListPositionRepository
@@ -12,10 +12,11 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
     PositionalDataSource<MODEL>(),
     DataSourceAdapter<MODEL> {
 
-    private val mDataSourceSnapshot = DataSourceSnapshot<MODEL>()
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()
+    @Suppress("LeakingThis")
+    private val mDataSourceSnapshotHelper = DataSourceSnapshotHelper<MODEL>(this)
 
-    override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<MODEL>) {
+    final override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<MODEL>) {
         val callBackInvoker: (list: List<MODEL>) -> Unit = {
             if (params.placeholdersEnabled) {
                 callback.onResult(it, 0, getTotalCount())
@@ -23,15 +24,14 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
                 callback.onResult(it, 0)
             }
         }
-        if (mDataSourceSnapshot.isOperate()) {
-            callBackInvoker.invoke(mDataSourceSnapshot.mModelList)
+        if (mDataSourceSnapshotHelper.isOperate()) {
+            callBackInvoker.invoke(mDataSourceSnapshotHelper.getSnapShot())
             return
         }
-        mLoadStatusLiveData.postValue(LoadStatus.LOADING)
+        mLoadStatusLiveData.postValue(LoadStatus.LOADING_REFRESH)
         listPositionRepository.loadInit(params.pageSize, object : RequestCallback<List<MODEL>> {
             override fun onResult(t: List<MODEL>) {
-                mDataSourceSnapshot.mModelList.clear()
-                mDataSourceSnapshot.mModelList.addAll(t)
+                mDataSourceSnapshotHelper.recordUpdate(t)
                 callBackInvoker.invoke(t)
                 mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
             }
@@ -42,18 +42,18 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
         })
     }
 
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MODEL>) {
-        if (mDataSourceSnapshot.isOperate()) {
-            callback.onResult(mDataSourceSnapshot.mModelList)
+    final override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MODEL>) {
+        if (mDataSourceSnapshotHelper.isOperate()) {
+            callback.onResult(mDataSourceSnapshotHelper.getSnapShot())
             return
         }
-        mLoadStatusLiveData.postValue(LoadStatus.LOADING)
+        mLoadStatusLiveData.postValue(LoadStatus.LOADING_MORE)
         listPositionRepository.loadMore(
             params.startPosition,
             params.loadSize,
             object : RequestCallback<List<MODEL>> {
                 override fun onResult(t: List<MODEL>) {
-                    mDataSourceSnapshot.mModelList.addAll(t)
+                    mDataSourceSnapshotHelper.recordAddLast(t)
                     callback.onResult(t)
                     mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
                 }
@@ -64,46 +64,19 @@ abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository
             })
     }
 
-    final override fun refresh() {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.DEFAULT
-        invalidate()
-    }
+    final override fun refresh() = mDataSourceSnapshotHelper.refresh()
 
-    final override fun update(position: Int, model: MODEL) {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.UPDATE
-        mDataSourceSnapshot.mModelList[position] = model
-        invalidate()
-    }
+    final override fun update(position: Int, model: MODEL) =
+        mDataSourceSnapshotHelper.update(position, model)
 
-    final override fun remove(list: List<MODEL>) {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.REMOVE
-        mDataSourceSnapshot.mModelList.removeAll(list)
-        invalidate()
-    }
+    final override fun remove(list: List<MODEL>) = mDataSourceSnapshotHelper.remove(list)
 
-    final override fun remove(position: Int) {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.REMOVE
-        mDataSourceSnapshot.mModelList.removeAt(position)
-        invalidate()
-    }
+    final override fun remove(position: Int) = mDataSourceSnapshotHelper.remove(position)
 
-    final override fun add(list: List<MODEL>) {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.ADD
-        mDataSourceSnapshot.mModelList.addAll(list)
-        invalidate()
-    }
+    final override fun add(list: List<MODEL>) = mDataSourceSnapshotHelper.add(list)
 
-    final override fun add(position: Int, model: MODEL) {
-        mDataSourceSnapshot.mOperateState =
-            DataSourceSnapshot.ADD
-        mDataSourceSnapshot.mModelList.add(position, model)
-        invalidate()
-    }
+    final override fun add(position: Int, model: MODEL) =
+        mDataSourceSnapshotHelper.add(position, model)
 
     final override fun getLoadStatusLiveData(): MutableLiveData<LoadStatus> = mLoadStatusLiveData
 
