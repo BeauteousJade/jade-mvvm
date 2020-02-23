@@ -26,7 +26,13 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(mContentLayoutRes)
         onPrepare()
-        replaceFragment(buildCurrentFragment(), mContainerIdRes)
+        if (savedInstanceState == null) {
+            replaceFragment(buildCurrentFragment().apply {
+                buildFragmentArguments()?.let {
+                    arguments = it
+                }
+            }, mContainerIdRes)
+        }
     }
 
     protected open fun onPrepare() {
@@ -34,6 +40,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun replaceFragment(fragment: BaseFragment<*>, @IdRes containerId: Int) {
         val beginTransaction = supportFragmentManager.beginTransaction()
+        fragment.arguments
         beginTransaction.replace(containerId, fragment)
         beginTransaction.commitAllowingStateLoss()
         if (this::mCurrentFragment.isInitialized) {
@@ -44,7 +51,9 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     final override fun onBackPressed() {
-        mBackPressDelegate.onBackPress()
+        if (!mBackPressDelegate.onBackPress()) {
+            super.onBackPressed()
+        }
     }
 
     final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -61,7 +70,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun addBackPressable(backPressable: BackPressable) = mBackPressDelegate.addBackPressable(backPressable)
 
-    fun remoBackPressable(backPressable: BackPressable) = mBackPressDelegate.removeBackPressable(backPressable)
+    fun removeBackPressable(backPressable: BackPressable) = mBackPressDelegate.removeBackPressable(backPressable)
 
     protected abstract fun buildCurrentFragment(): BaseFragment<*>
+
+    protected open fun buildFragmentArguments(): Bundle? = null
 }

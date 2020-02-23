@@ -1,8 +1,7 @@
 package com.jade.mvvm.helper.source.helper
 
 import androidx.lifecycle.MutableLiveData
-import com.jade.mvvm.fragment.list.helper.ListOperation
 
-interface DataSourceAdapter<MODEL> : ListOperation<MODEL> {
+interface DataSourceAdapter {
     fun getLoadStatusLiveData(): MutableLiveData<LoadStatus>
 }

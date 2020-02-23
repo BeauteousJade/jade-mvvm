@@ -1,5 +1,6 @@
 package com.jade.mvvm.fragment.viewModel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.switchMap
 import androidx.lifecycle.ViewModel
@@ -8,15 +9,19 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.jade.mvvm.fragment.list.helper.ListOperation
 import com.jade.mvvm.helper.source.BaseDataSourceFactory
+import com.jade.mvvm.helper.source.helper.DataSourceAdapter
+import com.jade.mvvm.helper.source.helper.LoadStatus
 
 abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSourceFactory<KEY, MODEL>) :
     ViewModel(),
     ListOperation<MODEL> {
 
-    private val mDataSource: DataSource<KEY, MODEL> = dataSourceFactory.create()
     val mPageListLiveData = LivePagedListBuilder(dataSourceFactory, initConfig()).build()
-    val mLoadStatusLiveData = switchMap(dataSourceFactory.asDataSourceAdapter()?.getLoadStatusLiveData()!!) {
+    private val mDataSourceLiveData = switchMap(dataSourceFactory.mDataSourceLiveData) {
         MutableLiveData(it)
+    }
+    val mLoadStatusLiveData: LiveData<LoadStatus> = switchMap(mDataSourceLiveData as LiveData<DataSourceAdapter>) {
+        it.getLoadStatusLiveData()
     }
 
     private fun initConfig(): PagedList.Config {
@@ -41,32 +46,44 @@ abstract class BaseRecyclerViewModel<KEY, MODEL>(dataSourceFactory: BaseDataSour
     }
 
     final override fun refresh() {
-        asListOperation(mDataSource)?.refresh()
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.refresh()
+        }
     }
 
     final override fun update(position: Int, model: MODEL) {
-        asListOperation(mDataSource)?.update(position, model)
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.update(position, model)
+        }
     }
 
     final override fun remove(position: Int) {
-        asListOperation(mDataSource)?.remove(position)
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.remove(position)
+        }
     }
 
     final override fun remove(list: List<MODEL>) {
-        asListOperation(mDataSource)?.remove(list)
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.remove(list)
+        }
     }
 
     final override fun add(position: Int, model: MODEL) {
-        asListOperation(mDataSource)?.add(position, model)
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.add(position, model)
+        }
     }
 
     final override fun add(list: List<MODEL>) {
-        asListOperation(mDataSource)?.add(list)
+        mDataSourceLiveData.value?.also {
+            asListOperation(it)?.add(list)
+        }
     }
 
     protected open fun getPageSize() = 20
 
-    protected open fun enablePlaceholders() = true
+    protected open fun enablePlaceholders() = false
 
     protected open fun getInitialLoadSizeHint() = -1
 

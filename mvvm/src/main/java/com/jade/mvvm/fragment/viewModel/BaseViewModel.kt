@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.jade.mvvm.fragment.list.helper.Operation
 import com.jade.mvvm.repository.normal.Repository
 
-abstract class BaseViewModel<MODEL>(private val repository: Repository<MODEL>) : ViewModel(),
+abstract class BaseViewModel<MODEL>(val repository: Repository<MODEL>) : ViewModel(),
     Operation {
 
     val mLoadStatusLiveData = switchMap(repository.getLoadStatusLiveData()) {
@@ -14,6 +14,12 @@ abstract class BaseViewModel<MODEL>(private val repository: Repository<MODEL>) :
     }
     val mLoadDataLiveData = switchMap(repository.getLoadDataLiveData()) {
         MutableLiveData(it)
+    }
+
+    fun trRefresh() {
+        if (mLoadDataLiveData.value == null) {
+            refresh()
+        }
     }
 
     override fun refresh() = repository.load()

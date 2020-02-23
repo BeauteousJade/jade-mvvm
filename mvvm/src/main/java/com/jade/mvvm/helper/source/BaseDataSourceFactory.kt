@@ -1,15 +1,15 @@
 package com.jade.mvvm.helper.source
 
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
-import com.jade.mvvm.helper.source.helper.DataSourceAdapter
 
 abstract class BaseDataSourceFactory<KEY, MODEL> : DataSource.Factory<KEY, MODEL>() {
 
-    private val mDataSource by lazy { createDataSource() }
+    val mDataSourceLiveData = MutableLiveData<DataSource<KEY, MODEL>>()
 
-    final override fun create(): DataSource<KEY, MODEL> = mDataSource
+    final override fun create(): DataSource<KEY, MODEL> = createDataSource().apply {
+        mDataSourceLiveData.postValue(this)
+    }
 
     abstract fun createDataSource(): DataSource<KEY, MODEL>
-
-    fun asDataSourceAdapter() = mDataSource as? DataSourceAdapter<*>
 }

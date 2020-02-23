@@ -2,6 +2,7 @@ package com.jade.mvvm.helper.source.impl
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.ItemKeyedDataSource
+import com.jade.mvvm.fragment.list.helper.ListOperation
 import com.jade.mvvm.helper.source.PageModel
 import com.jade.mvvm.helper.source.helper.DataSourceAdapter
 import com.jade.mvvm.helper.source.helper.DataSourceSnapshotHelper
@@ -10,7 +11,7 @@ import com.jade.mvvm.network.RequestCallback
 import com.jade.mvvm.repository.list.ItemKeyedRepository
 
 class BaseItemKeyedDataSource<KEY, MODEL : PageModel<KEY>>(private val itemKeyedRepository: ItemKeyedRepository<KEY, List<MODEL>>) :
-    ItemKeyedDataSource<KEY, MODEL>(), DataSourceAdapter<MODEL> {
+    ItemKeyedDataSource<KEY, MODEL>(), DataSourceAdapter, ListOperation<MODEL> {
 
     private val mDataSourceSnapshotHelper = DataSourceSnapshotHelper<MODEL>(this)
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()

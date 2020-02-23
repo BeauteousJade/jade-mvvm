@@ -2,15 +2,15 @@ package com.jade.mvvm.helper.source.impl
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
+import com.jade.mvvm.fragment.list.helper.ListOperation
 import com.jade.mvvm.helper.source.helper.DataSourceAdapter
 import com.jade.mvvm.helper.source.helper.DataSourceSnapshotHelper
 import com.jade.mvvm.helper.source.helper.LoadStatus
 import com.jade.mvvm.network.RequestCallback
 import com.jade.mvvm.repository.list.ListPositionRepository
 
-abstract class BasePostitionDataSource<MODEL>(private val listPositionRepository: ListPositionRepository<List<MODEL>>) :
-    PositionalDataSource<MODEL>(),
-    DataSourceAdapter<MODEL> {
+abstract class BasePositionDataSource<MODEL>(private val listPositionRepository: ListPositionRepository<List<MODEL>>) :
+    PositionalDataSource<MODEL>(), DataSourceAdapter, ListOperation<MODEL> {
 
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()
     @Suppress("LeakingThis")

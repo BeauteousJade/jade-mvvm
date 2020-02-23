@@ -11,7 +11,7 @@ class BaseRecyclerViewHolder(
     itemView: View,
     presenter: Presenter,
     fragment: BaseFragment<*>?,
-    extra: Map<String, Any>
+    extra: MutableMap<String, Any>
 ) : RecyclerView.ViewHolder(itemView) {
     val mPresenter = presenter
     val mPresence = object : Presence {

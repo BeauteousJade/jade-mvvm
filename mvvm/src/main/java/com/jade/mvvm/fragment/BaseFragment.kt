@@ -27,7 +27,7 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     private val mBackPressDelete = BackPressDelete()
     private val mOnActivityResultDelegate = OnActivityResultDelegate()
     private val mViewModel: T? by lazy { onCreateViewModel() }
-    private lateinit var mPresenter: Presenter
+    private var mPresenter: Presenter? = null
     private val mExtras = HashMap<String, Any>()
 
     final override fun onCreateView(
@@ -35,7 +35,7 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(getLayoutId(), container)
+        return inflater.inflate(getLayoutId(), container, false)
     }
 
     final override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -50,16 +50,18 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     private fun initPresenter() {
         opPrePareExtra()
         val baseCallerContext = BaseCallerContext()
-        baseCallerContext.mViewModel = mViewModel!!
+        mViewModel?.apply {
+            baseCallerContext.mViewModel = this
+        }
 
         mPresenter = onCreatePresenter()
-        mPresenter.create(this)
-        mPresenter.bind(baseCallerContext, mExtras)
+        mPresenter?.create(this)
+        mPresenter?.bind(baseCallerContext, mExtras)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mPresenter.destroy()
+        mPresenter?.destroy()
     }
 
     override fun onBackPress(): Boolean = mBackPressDelete.onBackPress()
@@ -102,11 +104,12 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     @LayoutRes
     protected abstract fun getLayoutId(): Int
 
-    protected abstract fun onCreatePresenter(): Presenter
+    protected open fun onCreatePresenter(): Presenter? = null
 
     @Module
     class BaseCallerContext {
         @Provides(value = Constant.VIEW_MODEL)
-        lateinit var mViewModel: ViewModel
+        @JvmField
+        var mViewModel: ViewModel? = null
     }
 }

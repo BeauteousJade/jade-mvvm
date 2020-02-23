@@ -4,8 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.paging.PagedListAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import com.jade.mvvm.fragment.BaseFragment
 import com.jade.mvvm.fragment.list.helper.DiffUtilCallback
 import com.jade.mvvm.helper.presenter.Presenter
@@ -28,13 +26,19 @@ abstract class BasePageListAdapter<MODEL> :
     }
 
     final override fun onBindViewHolder(holder: BaseRecyclerViewHolder, position: Int) =
-        holder.mPresenter.bind(onCreateCallerContext(), holder.mExtra)
+        holder.mPresenter.bind(onCreateCallerContext(position), holder.mExtra)
 
-    final override fun onViewRecycled(holder: BaseRecyclerViewHolder) = holder.mPresenter.destroy()
+    final override fun onViewRecycled(holder: BaseRecyclerViewHolder) = holder.mPresenter.unBind()
 
     protected open fun onCreatePresenter(viewType: Int): Presenter = Presenter()
 
-    protected open fun onCreateCallerContext(): Any? = null
+    protected open fun onCreateCallerContext(position: Int): Any {
+        val baseCallerContext = BaseCallerContext()
+        baseCallerContext.mModel = getItem(position)
+        baseCallerContext.mPosition = position
+        baseCallerContext.mFragment = mCurrentFragment
+        return baseCallerContext
+    }
 
     fun putExtra(id: String, extra: Any) = mExtra.put(id, extra)
 

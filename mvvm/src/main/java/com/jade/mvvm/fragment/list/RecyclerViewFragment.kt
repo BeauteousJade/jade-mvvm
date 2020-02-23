@@ -14,6 +14,7 @@ abstract class RecyclerViewFragment<MODEL, T : BaseRecyclerViewModel<*, MODEL>> 
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: BasePageListAdapter<MODEL>
 
+    @CallSuper
     override fun onPrepareView(view: View) {
         super.onPrepareView(view)
         mRecyclerView = view.findViewById(R.id.recyclerView)
