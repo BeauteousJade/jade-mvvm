@@ -3,20 +3,28 @@ package com.jade.mvvm.helper.source.impl
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
 import com.jade.mvvm.fragment.list.helper.ListOperation
+import com.jade.mvvm.helper.source.DataSourceSnapshot
 import com.jade.mvvm.helper.source.helper.DataSourceAdapter
 import com.jade.mvvm.helper.source.helper.DataSourceSnapshotHelper
 import com.jade.mvvm.helper.source.helper.LoadStatus
 import com.jade.mvvm.network.RequestCallback
 import com.jade.mvvm.repository.list.ListPositionRepository
 
-abstract class BasePositionDataSource<MODEL>(private val listPositionRepository: ListPositionRepository<List<MODEL>>) :
+open class BasePositionDataSource<MODEL>(
+    private val listPositionRepository: ListPositionRepository<List<MODEL>>,
+    dataSourceSnapshot: DataSourceSnapshot<MODEL>
+) :
     PositionalDataSource<MODEL>(), DataSourceAdapter, ListOperation<MODEL> {
 
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()
     @Suppress("LeakingThis")
-    private val mDataSourceSnapshotHelper = DataSourceSnapshotHelper<MODEL>(this)
+    private val mDataSourceSnapshotHelper =
+        DataSourceSnapshotHelper<MODEL>(this, dataSourceSnapshot)
 
-    final override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<MODEL>) {
+    final override fun loadInitial(
+        params: LoadInitialParams,
+        callback: LoadInitialCallback<MODEL>
+    ) {
         val callBackInvoker: (list: List<MODEL>) -> Unit = {
             if (params.placeholdersEnabled) {
                 callback.onResult(it, 0, getTotalCount())
@@ -25,7 +33,8 @@ abstract class BasePositionDataSource<MODEL>(private val listPositionRepository:
             }
         }
         if (mDataSourceSnapshotHelper.isOperate()) {
-            callBackInvoker.invoke(mDataSourceSnapshotHelper.getSnapShot())
+            callBackInvoker.invoke(ArrayList(mDataSourceSnapshotHelper.getSnapShot()))
+            mDataSourceSnapshotHelper.resetStatus()
             return
         }
         mLoadStatusLiveData.postValue(LoadStatus.LOADING_REFRESH)
@@ -45,6 +54,7 @@ abstract class BasePositionDataSource<MODEL>(private val listPositionRepository:
     final override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MODEL>) {
         if (mDataSourceSnapshotHelper.isOperate()) {
             callback.onResult(mDataSourceSnapshotHelper.getSnapShot())
+            mDataSourceSnapshotHelper.resetStatus()
             return
         }
         mLoadStatusLiveData.postValue(LoadStatus.LOADING_MORE)

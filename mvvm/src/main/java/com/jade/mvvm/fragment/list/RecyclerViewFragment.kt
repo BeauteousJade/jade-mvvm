@@ -8,19 +8,28 @@ import com.jade.mvvm.R
 import com.jade.mvvm.fragment.BaseFragment
 import com.jade.mvvm.fragment.list.adapter.BasePageListAdapter
 import com.jade.mvvm.fragment.viewModel.BaseRecyclerViewModel
+import com.jade.mvvm.helper.Constant
 
 abstract class RecyclerViewFragment<MODEL, T : BaseRecyclerViewModel<*, MODEL>> : BaseFragment<T>() {
 
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: BasePageListAdapter<MODEL>
+    private lateinit var mLayoutManager: RecyclerView.LayoutManager;
 
-    @CallSuper
     override fun onPrepareView(view: View) {
         super.onPrepareView(view)
         mRecyclerView = view.findViewById(R.id.recyclerView)
         mAdapter = onCreateAdapter()
         mRecyclerView.adapter = mAdapter
-        mRecyclerView.layoutManager = onCreateLayoutManager()
+        mLayoutManager = onCreateLayoutManager()
+        mRecyclerView.layoutManager = mLayoutManager
+    }
+
+    @CallSuper
+    override fun onPrePareExtra() {
+        putExtra(Constant.LAYOUT_MANAGER, mLayoutManager)
+        putExtra(Constant.RECYCLER_ADAPTER, mAdapter)
+        putExtra(Constant.RECYCLER_VIEW, mRecyclerView)
     }
 
     @CallSuper

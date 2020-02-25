@@ -9,10 +9,8 @@ import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import com.blade.annotation.Inject
 import com.blade.annotation.Module
 import com.blade.annotation.Provides
-import com.jade.mvvm.R
 import com.jade.mvvm.activity.BaseActivity
 import com.jade.mvvm.helper.Constant
 import com.jade.mvvm.helper.delegate.BackPressDelete
@@ -48,7 +46,7 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     }
 
     private fun initPresenter() {
-        opPrePareExtra()
+        onPrePareExtra()
         val baseCallerContext = BaseCallerContext()
         mViewModel?.apply {
             baseCallerContext.mViewModel = this
@@ -79,12 +77,10 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     fun removeOnActivityResultListener(onActivityResultListener: OnActivityResultListener) =
         mOnActivityResultDelegate.removeOnActivityResultListener(onActivityResultListener)
 
-    @CallSuper
     protected open fun onPrepareView(view: View) {
     }
 
-    @CallSuper
-    protected open fun opPrePareExtra() {
+    protected open fun onPrePareExtra() {
     }
 
     protected fun putExtra(key: String, value: Any) = mExtras.put(key, value)

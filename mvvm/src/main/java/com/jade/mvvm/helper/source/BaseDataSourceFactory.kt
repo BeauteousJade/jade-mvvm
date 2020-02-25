@@ -6,6 +6,7 @@ import androidx.paging.DataSource
 abstract class BaseDataSourceFactory<KEY, MODEL> : DataSource.Factory<KEY, MODEL>() {
 
     val mDataSourceLiveData = MutableLiveData<DataSource<KEY, MODEL>>()
+    val mDataSourceSnapshot = DataSourceSnapshot<MODEL>()
 
     final override fun create(): DataSource<KEY, MODEL> = createDataSource().apply {
         mDataSourceLiveData.postValue(this)

@@ -4,14 +4,19 @@ import androidx.paging.DataSource
 import com.jade.mvvm.fragment.list.helper.ListOperation
 import com.jade.mvvm.helper.source.DataSourceSnapshot
 
-class DataSourceSnapshotHelper<MODEL>(private val dataSource: DataSource<*, MODEL>) :
+class DataSourceSnapshotHelper<MODEL>(
+    private val dataSource: DataSource<*, MODEL>,
+    private val mDataSourceSnapshot: DataSourceSnapshot<MODEL>
+) :
     ListOperation<MODEL> {
-
-    private val mDataSourceSnapshot = DataSourceSnapshot<MODEL>()
 
     fun getSnapShot() = mDataSourceSnapshot.mModelList
 
     fun isOperate() = mDataSourceSnapshot.isOperate()
+
+    fun resetStatus() {
+        mDataSourceSnapshot.mOperateState = DataSourceSnapshot.DEFAULT
+    }
 
     fun recordUpdate(list: List<MODEL>) {
         mDataSourceSnapshot.mModelList.clear()
@@ -22,7 +27,7 @@ class DataSourceSnapshotHelper<MODEL>(private val dataSource: DataSource<*, MODE
         mDataSourceSnapshot.mModelList.addAll(list)
     }
 
-    fun recoreAddFirst(list: List<MODEL>) {
+    fun recordAddFirst(list: List<MODEL>) {
         mDataSourceSnapshot.mModelList.addAll(0, list)
     }
 
