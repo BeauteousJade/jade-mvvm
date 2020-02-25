@@ -30,4 +30,8 @@ interface Service {
     @POST("message/getDetailMessage")
     @FormUrlEncoded
     fun getDetailMessage(@Field("id") id: Int): Call<Message>
+
+    @POST("message/getCountMessageByKey")
+    @FormUrlEncoded
+    fun getCountMessageByKey(@Field("key") key: String, @Field("count") count: Int): Call<List<Message>>
 }

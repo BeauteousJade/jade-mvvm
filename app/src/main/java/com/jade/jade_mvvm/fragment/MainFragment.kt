@@ -12,9 +12,14 @@ class MainFragment : BaseFragment<MainViewModel>() {
 
     override fun onPrepareView(view: View) {
         super.onPrepareView(view)
-        view.findViewById<View>(R.id.recyclerView_load_data).setOnClickListener {
+        view.findViewById<View>(R.id.recyclerView_load_data_with_position).setOnClickListener {
             val intent = Intent(activity, VenueActivity::class.java)
-            intent.putExtra(VenueActivity.KEY_TYPE, VenueActivity.TYPE_RECYCLER_VIEW_LOAD_DATA)
+            intent.putExtra(VenueActivity.KEY_TYPE, VenueActivity.LOAD_DATA_WITH_POSITION)
+            startActivity(intent)
+        }
+        view.findViewById<View>(R.id.recyclerView_load_data_with_key).setOnClickListener {
+            val intent = Intent(activity, VenueActivity::class.java)
+            intent.putExtra(VenueActivity.KEY_TYPE, VenueActivity.LOAD_DATA_WITH_KEY)
             startActivity(intent)
         }
     }
