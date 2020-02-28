@@ -2,7 +2,6 @@ package com.jade.mvvm.helper.presenter
 
 import android.view.View
 import androidx.annotation.IntDef
-import androidx.lifecycle.ViewModel
 import com.blade.inject.Blade
 import com.jade.mvvm.activity.BaseActivity
 import com.jade.mvvm.fragment.BaseFragment
@@ -26,7 +25,7 @@ open class Presenter : Presence {
         return when (mState) {
             INIT -> {
                 mPresence = presence
-                mState = INIT
+                mState = CREATE
                 onCreate()
                 traverseChildPresenter {
                     it.create(presence)

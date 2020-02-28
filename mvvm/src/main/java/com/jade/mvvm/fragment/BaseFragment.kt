@@ -9,10 +9,8 @@ import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import com.blade.annotation.Inject
 import com.blade.annotation.Module
 import com.blade.annotation.Provides
-import com.jade.mvvm.R
 import com.jade.mvvm.activity.BaseActivity
 import com.jade.mvvm.helper.Constant
 import com.jade.mvvm.helper.delegate.BackPressDelete
@@ -22,12 +20,17 @@ import com.jade.mvvm.helper.presenter.Presenter
 import com.jade.mvvm.listener.BackPressable
 import com.jade.mvvm.listener.OnActivityResultListener
 
+/**
+ * 最基本的Fragment，此类同[com.jade.mvvm.activity.BaseActivity]一样，定义了一些Fragment通用的方法。
+ * 所有的Fragment必须直接或者间接继承于它。
+ * [com.jade.mvvm.activity.BaseActivity]
+ */
 abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivityResultListener, Presence {
 
     private val mBackPressDelete = BackPressDelete()
     private val mOnActivityResultDelegate = OnActivityResultDelegate()
     private val mViewModel: T? by lazy { onCreateViewModel() }
-    private lateinit var mPresenter: Presenter
+    private var mPresenter: Presenter? = null
     private val mExtras = HashMap<String, Any>()
 
     final override fun onCreateView(
@@ -35,7 +38,7 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(getLayoutId(), container)
+        return inflater.inflate(getLayoutId(), container, false)
     }
 
     final override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -48,18 +51,20 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     }
 
     private fun initPresenter() {
-        opPrePareExtra()
+        onPrePareExtra()
         val baseCallerContext = BaseCallerContext()
-        baseCallerContext.mViewModel = mViewModel!!
+        mViewModel?.apply {
+            baseCallerContext.mViewModel = this
+        }
 
         mPresenter = onCreatePresenter()
-        mPresenter.create(this)
-        mPresenter.bind(baseCallerContext, mExtras)
+        mPresenter?.create(this)
+        mPresenter?.bind(baseCallerContext, mExtras)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mPresenter.destroy()
+        mPresenter?.destroy()
     }
 
     override fun onBackPress(): Boolean = mBackPressDelete.onBackPress()
@@ -77,12 +82,10 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     fun removeOnActivityResultListener(onActivityResultListener: OnActivityResultListener) =
         mOnActivityResultDelegate.removeOnActivityResultListener(onActivityResultListener)
 
-    @CallSuper
     protected open fun onPrepareView(view: View) {
     }
 
-    @CallSuper
-    protected open fun opPrePareExtra() {
+    protected open fun onPrePareExtra() {
     }
 
     protected fun putExtra(key: String, value: Any) = mExtras.put(key, value)
@@ -102,11 +105,12 @@ abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivi
     @LayoutRes
     protected abstract fun getLayoutId(): Int
 
-    protected abstract fun onCreatePresenter(): Presenter
+    protected open fun onCreatePresenter(): Presenter? = null
 
     @Module
     class BaseCallerContext {
         @Provides(value = Constant.VIEW_MODEL)
-        lateinit var mViewModel: ViewModel
+        @JvmField
+        var mViewModel: ViewModel? = null
     }
 }

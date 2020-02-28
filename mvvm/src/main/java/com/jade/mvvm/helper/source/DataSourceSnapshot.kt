@@ -1,4 +1,4 @@
-package com.jade.mvvm.fragment.list.helper
+package com.jade.mvvm.helper.source
 
 import androidx.annotation.IntDef
 
@@ -7,10 +7,15 @@ class DataSourceSnapshot<MODEL> {
     @OperateState
     var mOperateState = DEFAULT
 
-    fun isOperate() = mOperateState == DEFAULT
+    fun isOperate() = mOperateState != DEFAULT
 
     companion object {
-        @IntDef(DEFAULT, UPDATE, REMOVE, ADD)
+        @IntDef(
+            DEFAULT,
+            UPDATE,
+            REMOVE,
+            ADD
+        )
         annotation class OperateState
 
         const val DEFAULT = 0
