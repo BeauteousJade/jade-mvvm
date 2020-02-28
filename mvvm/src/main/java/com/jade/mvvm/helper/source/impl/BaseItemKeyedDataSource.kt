@@ -21,24 +21,30 @@ open class BaseItemKeyedDataSource<KEY, MODEL : PageModel<KEY>>(
     private val mLoadStatusLiveData = MutableLiveData<LoadStatus>()
 
     override fun loadAfter(params: LoadParams<KEY>, callback: LoadCallback<MODEL>) =
-        load(params, callback, LoadStatus.LOADING_MORE) {
+        load(params.key, params.requestedLoadSize, LoadStatus.LOADING_MORE) {
             mDataSourceSnapshotHelper.recordAddLast(it)
+            callback.onResult(it)
         }
 
-    override fun loadBefore(params: LoadParams<KEY>, callback: LoadCallback<MODEL>) = load(
-        params, callback, LoadStatus
-            .LOADING_BEFORE
+    override fun loadBefore(params: LoadParams<KEY>, callback: LoadCallback<MODEL>) =
+        load(params.key, params.requestedLoadSize, LoadStatus.LOADING_BEFORE) {
+            mDataSourceSnapshotHelper.recordAddFirst(it)
+            callback.onResult(it)
+        }
+
+    override fun loadInitial(params: LoadInitialParams<KEY>, callback: LoadInitialCallback<MODEL>) = load(
+        params
+            .requestedInitialKey, params.requestedLoadSize, LoadStatus.LOADING_REFRESH
     ) {
-        mDataSourceSnapshotHelper.recordAddFirst(it)
+        if (params.placeholdersEnabled) {
+            callback.onResult(it, 0, getTotalCount())
+        } else {
+            callback.onResult(it, 0, Int.MAX_VALUE)
+        }
+        mDataSourceSnapshotHelper.recordUpdate(it)
     }
 
-    private fun load(
-        params: LoadParams<KEY>,
-        callback: LoadCallback<MODEL>,
-        loadStatus: LoadStatus,
-        snapshotInvoker: (modeList: List<MODEL>)
-        -> Unit
-    ) {
+    private fun load(key: KEY?, size: Int, loadStatus: LoadStatus, snapshotInvoker: (modeList: List<MODEL>) -> Unit) {
         if (mDataSourceSnapshotHelper.isOperate()) {
             snapshotInvoker.invoke(ArrayList(mDataSourceSnapshotHelper.getSnapShot()))
             mDataSourceSnapshotHelper.resetStatus()
@@ -48,7 +54,6 @@ open class BaseItemKeyedDataSource<KEY, MODEL : PageModel<KEY>>(
             override fun onResult(t: List<MODEL>) {
                 snapshotInvoker.invoke(t)
                 mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
-                callback.onResult(t)
             }
 
             override fun onError(throwable: Throwable) {
@@ -57,40 +62,12 @@ open class BaseItemKeyedDataSource<KEY, MODEL : PageModel<KEY>>(
         }
         mLoadStatusLiveData.postValue(loadStatus)
         if (loadStatus == LoadStatus.LOADING_BEFORE) {
-            itemKeyedRepository.loadBefore(params.key, params.requestedLoadSize, requestCallback)
+            itemKeyedRepository.loadBefore(key, size, requestCallback)
         } else if (loadStatus == LoadStatus.LOADING_MORE) {
-            itemKeyedRepository.loadAfter(params.key, params.requestedLoadSize, requestCallback)
+            itemKeyedRepository.loadAfter(key, size, requestCallback)
+        } else if (loadStatus == LoadStatus.LOADING_REFRESH) {
+            itemKeyedRepository.loadInit(key, size, requestCallback)
         }
-    }
-
-    override fun loadInitial(params: LoadInitialParams<KEY>, callback: LoadInitialCallback<MODEL>) {
-        val callBackInvoker: (list: List<MODEL>) -> Unit = {
-            if (params.placeholdersEnabled) {
-                callback.onResult(it, 0, getTotalCount())
-            } else {
-                callback.onResult(it, 0, Int.MAX_VALUE)
-            }
-        }
-        if (mDataSourceSnapshotHelper.isOperate()) {
-            callBackInvoker.invoke(ArrayList(mDataSourceSnapshotHelper.getSnapShot()))
-            mDataSourceSnapshotHelper.resetStatus()
-            return
-        }
-        mLoadStatusLiveData.postValue(LoadStatus.LOADING_REFRESH)
-        itemKeyedRepository.loadInit(
-            params.requestedInitialKey,
-            params.requestedLoadSize,
-            object : RequestCallback<List<MODEL>> {
-                override fun onResult(t: List<MODEL>) {
-                    mDataSourceSnapshotHelper.recordUpdate(t)
-                    mLoadStatusLiveData.postValue(LoadStatus.SUCCESS)
-                    callBackInvoker.invoke(t)
-                }
-
-                override fun onError(throwable: Throwable) {
-                    mLoadStatusLiveData.postValue(LoadStatus.ERROR)
-                }
-            })
     }
 
     override fun getKey(item: MODEL) = item.getKey()
