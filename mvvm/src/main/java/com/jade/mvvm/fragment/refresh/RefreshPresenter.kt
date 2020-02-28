@@ -22,13 +22,13 @@ class RefreshPresenter : Presenter() {
     }
 
     override fun onBind() {
-        mViewModel.mLoadStatusLiveData?.observe(getCurrentFragment()!!, mLoadStatusObserver)
+        mViewModel.mLoadStatusLiveData.observe(getCurrentFragment()!!, mLoadStatusObserver)
         mRefreshLayout.setOnRefreshListener {
             mViewModel.refresh()
         }
     }
 
     override fun onUnBind() {
-        mViewModel.mLoadStatusLiveData?.removeObserver(mLoadStatusObserver)
+        mViewModel.mLoadStatusLiveData.removeObserver(mLoadStatusObserver)
     }
 }
