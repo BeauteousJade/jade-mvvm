@@ -20,6 +20,11 @@ import com.jade.mvvm.helper.presenter.Presenter
 import com.jade.mvvm.listener.BackPressable
 import com.jade.mvvm.listener.OnActivityResultListener
 
+/**
+ * 最基本的Fragment，此类同[com.jade.mvvm.activity.BaseActivity]一样，定义了一些Fragment通用的方法。
+ * 所有的Fragment必须直接或者间接继承于它。
+ * [com.jade.mvvm.activity.BaseActivity]
+ */
 abstract class BaseFragment<T : ViewModel> : Fragment(), BackPressable, OnActivityResultListener, Presence {
 
     private val mBackPressDelete = BackPressDelete()
